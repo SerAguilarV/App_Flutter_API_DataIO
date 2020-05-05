@@ -16,8 +16,12 @@ class _HomePageState extends State<HomePage> {
   bool _flag = true;
   bool _showCard = false;
   String _nombre = "";
+  String _apellidos = "";
   String _id = "";
   bool _flagText = true;
+  bool _showCardNotFound = false;
+  String _fechaingreso = "" ;
+  NetworkImage _sexPersonURL;
   TextEditingController _controlTexto = new TextEditingController();
 
   @override
@@ -49,6 +53,7 @@ class _HomePageState extends State<HomePage> {
             _controlTexto.clear();
             _showCard = false;
             _flagText = true;
+            _showCardNotFound = false;
           });
         }
       ),
@@ -73,7 +78,7 @@ class _HomePageState extends State<HomePage> {
           _flag = valFlag;
         });
       },
-      keyboardType: TextInputType.number,
+      // keyboardType: TextInputType.number,
       decoration: InputDecoration(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
         hintText: "Número de empleado",
@@ -98,15 +103,32 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<Null> _responseAPI() async{
-    final url = "http://datamx.io/api/action/datastore_search_sql?sql=SELECT%20*%20from%20%22df9d4714-a5a3-469f-ae9a-d4c28b34d954%22%20WHERE%20_id%20=%20$_usuario";
+    final url = "https://api-banco-test.herokuapp.com/api/banco/usuarios/$_usuario/IDBanco";
+    print(url);
     final res = await http.get(url);
     print(res.statusCode);
-    final jsonParse = json.decode(res.body);
-    setState(() {
-      _nombre = jsonParse["result"]["records"][0]["nombre"];
-      _id = jsonParse["result"]["records"][0]["_id"].toString();
-      _showCard = true;
-    });
+    final Map jsonP = json.decode(res.body);
+    if (jsonP.containsKey("ID") ) {
+      setState(() {
+        _nombre = jsonP["Datos"]["NOMBRE"];
+        _apellidos = jsonP["Datos"]["APELLIDOS"];
+        _id = jsonP["ID"];
+        _fechaingreso = jsonP["FECHA_INGRESO"];
+        _showCard = true;
+        _showCardNotFound = false;
+        if (jsonP["Datos"]["GENERO"] == "M") {
+          _sexPersonURL = NetworkImage("https://f0.pngfuel.com/png/168/827/female-icon-illustration-png-clip-art.png");
+        } else {
+          _sexPersonURL = NetworkImage("https://www.kindpng.com/picc/m/21-211180_transparent-businessman-clipart-png-user-man-icon-png.png");
+        }
+      });
+    } else {
+      setState(() {
+        _showCard = false;
+        _showCardNotFound = true;
+
+      });
+    }
   }
 
   Widget _widgetresponseAPI() {
@@ -123,12 +145,46 @@ class _HomePageState extends State<HomePage> {
           children: <Widget>[
             Text("ID: $_id"),
             Text('Nombre: $_nombre'),
-            Text("Apellidos: "),
-            Text("Fecha de Ingreso: ")
+            Text("Apellidos: $_apellidos"),
+            Text("Fecha de Ingreso: $_fechaingreso"),
+            SizedBox(height: 20,),
+            Center(
+              child: FadeInImage(placeholder: AssetImage("assets/loading.gif"), 
+              image: _sexPersonURL,
+              fadeInDuration: Duration(milliseconds: 200),
+              height: 200,
+              fit: BoxFit.cover,
+              ),
+            ),
           ],
         ),
       ),
     );
+    }
+    else if(_showCardNotFound){
+      return Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+      elevation: 20,
+      child: Container(
+        width: 500,
+        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 50),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Center(child: Text("Usuario no encontrado")),
+            SizedBox(height: 20,),
+            Container(
+              child: Center(child: Image(image: AssetImage('assets/notfound.gif'),fit: BoxFit.cover,)),
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.rectangle
+              ) ,
+              ),
+          ],
+        ),
+      ),
+      );
     }
     else{
       return Text("");
