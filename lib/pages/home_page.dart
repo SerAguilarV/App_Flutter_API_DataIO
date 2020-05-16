@@ -14,21 +14,28 @@ class _HomePageState extends State<HomePage> {
 
   String _usuario = "";
   bool _flag = true;
+  bool _flagPass = true;
   bool _showCard = false;
   String _nombre = "";
   String _apellidos = "";
   String _id = "";
+  String _password = "";
   bool _flagText = true;
   bool _showCardNotFound = false;
   String _fechaingreso = "" ;
   NetworkImage _sexPersonURL;
   TextEditingController _controlTexto = new TextEditingController();
+  TextEditingController _controlPass = new TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Respuesta de API"),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(60),
+        child:AppBar(
+          title: Center(child: Text("Ingreso de usuario")),
+          backgroundColor: Colors.redAccent,
+        ),
       ),
       body: Container(
         padding: EdgeInsets.symmetric(horizontal: 30),
@@ -36,7 +43,9 @@ class _HomePageState extends State<HomePage> {
           children: <Widget>[
             SizedBox(height: 80,),
             _getUser(),
-            SizedBox(height: 30,),
+            SizedBox(height: 10,),
+            _getPass(),
+            SizedBox(height: 50,),
             _botonSendAPI(context),
             SizedBox(height: 30,),
             _widgetresponseAPI(),
@@ -45,11 +54,13 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.clear),
+        backgroundColor: Colors.redAccent,
         onPressed: (){
           print("Floating Pressed!");
           setState(() {
             _usuario = "";
             _flag = true;
+            _controlPass.clear();
             _controlTexto.clear();
             _showCard = false;
             _flagText = true;
@@ -63,7 +74,7 @@ class _HomePageState extends State<HomePage> {
   Widget _getUser() {
     return TextField(
       enabled: _flagText,
-      controller: _controlTexto,
+      controller: _controlPass,
       maxLength: 7,
       onChanged: (valor){
         bool valFlag = false;
@@ -72,7 +83,7 @@ class _HomePageState extends State<HomePage> {
         }else{
           valFlag =true;
         }
-        print(valor);
+        print("Usuario: " + valor);
         setState(() {
           _usuario=valor;
           _flag = valFlag;
@@ -87,10 +98,37 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _getPass() {
+    return TextField(
+      enabled: _flagText,
+      controller: _controlTexto,
+      obscureText: true,
+      onChanged: (valor){
+        bool valFlag = false;
+        if(valor.length>=1){
+          valFlag = false;
+        }else{
+          valFlag =true;
+        }
+        print("Contraseña: " + valor);
+        setState(() {
+          _password=valor;
+          _flagPass = valFlag;
+        });
+      },
+      // keyboardType: TextInputType.number,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+        hintText: "Contraseña",
+        suffixIcon: Icon(Icons.security)
+      ),
+    );
+  }
+
   Widget _botonSendAPI(BuildContext context) {
     return RaisedButton(
       child: Text("Enviar Usuario"),
-        onPressed: (_flag) ? null : (){
+        onPressed: (_flag || _flagPass) ? null : (){
           setState(() {
             _flag = true;
             _flagText = false;
@@ -103,9 +141,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<Null> _responseAPI() async{
-    final url = "https://api-banco-test.herokuapp.com/api/banco/usuarios/$_usuario/IDBanco";
+    final url = "https://api-banco-test.herokuapp.com/api/banco/usuarios/signin";
+    final headers = <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    };
+    final body = jsonEncode(<String, String>{
+      'username': _usuario,
+      "password": _password
+    });
     print(url);
-    final res = await http.get(url);
+    final res = await http.post(url,body: body, headers: headers);
     print(res.statusCode);
     final Map jsonP = json.decode(res.body);
     if (jsonP.containsKey("ID") ) {
@@ -122,6 +167,10 @@ class _HomePageState extends State<HomePage> {
           _sexPersonURL = NetworkImage("https://www.kindpng.com/picc/m/21-211180_transparent-businessman-clipart-png-user-man-icon-png.png");
         }
       });
+    } else if(jsonP.containsKey("newPass")){
+      if (jsonP["newPass"]){
+        print("redirectionando");
+      }
     } else {
       setState(() {
         _showCard = false;
