@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:api_node/utils/data.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
-
+  static const String id = "/";
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -16,13 +17,12 @@ class _HomePageState extends State<HomePage> {
   bool _flag = true;
   bool _flagPass = true;
   bool _showCard = false;
-  String _nombre = "";
-  String _apellidos = "";
-  String _id = "";
+  String _idBanco = "";
+  String _idMongo = "";
   String _password = "";
   bool _flagText = true;
   bool _showCardNotFound = false;
-  String _fechaingreso = "" ;
+  bool _showCardPassInvalid = false;
   NetworkImage _sexPersonURL;
   TextEditingController _controlTexto = new TextEditingController();
   TextEditingController _controlPass = new TextEditingController();
@@ -65,6 +65,7 @@ class _HomePageState extends State<HomePage> {
             _showCard = false;
             _flagText = true;
             _showCardNotFound = false;
+            _showCardPassInvalid = false;
           });
         }
       ),
@@ -135,13 +136,13 @@ class _HomePageState extends State<HomePage> {
           });
           print("Enviando Usuario: $_usuario");
           FocusScope.of(context).requestFocus(new FocusNode());
-          _responseAPI();
+          _responseAPI(context);
         },
       );
   }
 
-  Future<Null> _responseAPI() async{
-    final url = "https://api-banco-test.herokuapp.com/api/banco/usuarios/signin";
+  Future<Null> _responseAPI(BuildContext context) async{
+    final url = "http://192.168.1.104:5000/api/banco/usuarios/signin";
     final headers = <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     };
@@ -153,15 +154,13 @@ class _HomePageState extends State<HomePage> {
     final res = await http.post(url,body: body, headers: headers);
     print(res.statusCode);
     final Map jsonP = json.decode(res.body);
-    if (jsonP.containsKey("ID") ) {
+    if (jsonP.containsKey("user") ) {
       setState(() {
-        _nombre = jsonP["Datos"]["NOMBRE"];
-        _apellidos = jsonP["Datos"]["APELLIDOS"];
-        _id = jsonP["ID"];
-        _fechaingreso = jsonP["FECHA_INGRESO"];
+        _idMongo = jsonP["user"]["id"];
+        _idBanco = jsonP["user"]["username"];
         _showCard = true;
         _showCardNotFound = false;
-        if (jsonP["Datos"]["GENERO"] == "M") {
+        if (jsonP["user"]["GENERO"] == "M") {
           _sexPersonURL = NetworkImage("https://f0.pngfuel.com/png/168/827/female-icon-illustration-png-clip-art.png");
         } else {
           _sexPersonURL = NetworkImage("https://www.kindpng.com/picc/m/21-211180_transparent-businessman-clipart-png-user-man-icon-png.png");
@@ -170,12 +169,26 @@ class _HomePageState extends State<HomePage> {
     } else if(jsonP.containsKey("newPass")){
       if (jsonP["newPass"]){
         print("redirectionando");
+        final datos = Data(
+          usuario: _usuario,
+          password: _password,
+          headers : jsonP["token"],
+          idMongo: jsonP["_id"]
+        );
+        Navigator.pushNamed(context, "/newPass", arguments: datos);
+      }
+    }
+    else if(res.statusCode == 400 && jsonP.containsKey("message")){
+      if(jsonP["message"] == "Contraseña invalida"){
+       setState(() {
+        _showCard = false;
+        _showCardPassInvalid = true;
+      });
       }
     } else {
       setState(() {
         _showCard = false;
         _showCardNotFound = true;
-
       });
     }
   }
@@ -192,17 +205,15 @@ class _HomePageState extends State<HomePage> {
           mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text("ID: $_id"),
-            Text('Nombre: $_nombre'),
-            Text("Apellidos: $_apellidos"),
-            Text("Fecha de Ingreso: $_fechaingreso"),
+            Text("ID Banco: $_idBanco"),
+            Text('_id Mongo: $_idMongo'),
             SizedBox(height: 20,),
             Center(
               child: FadeInImage(placeholder: AssetImage("assets/loading.gif"), 
               image: _sexPersonURL,
               fadeInDuration: Duration(milliseconds: 200),
-              height: 200,
-              fit: BoxFit.cover,
+              height: 100,
+              fit: BoxFit.contain,
               ),
             ),
           ],
@@ -210,8 +221,19 @@ class _HomePageState extends State<HomePage> {
       ),
     );
     }
+    else if(_showCardPassInvalid){
+      return _cardGif('assets/wrong_pass.jpg', "Contraseña Invalida");
+    }
     else if(_showCardNotFound){
-      return Card(
+      return _cardGif('assets/notfound.gif', "Usuario no encontrado");
+    }
+    else{
+      return Divider();
+    }
+  }
+
+  Widget _cardGif(String img, String textoCard) {
+    return Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
       elevation: 20,
       child: Container(
@@ -221,10 +243,10 @@ class _HomePageState extends State<HomePage> {
           mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Center(child: Text("Usuario no encontrado")),
+            Center(child: Text(textoCard)),
             SizedBox(height: 20,),
             Container(
-              child: Center(child: Image(image: AssetImage('assets/notfound.gif'),fit: BoxFit.cover,)),
+              child: Center(child: Image(image: AssetImage(img),fit: BoxFit.cover,)),
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.rectangle
@@ -234,9 +256,6 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       );
-    }
-    else{
-      return Text("");
-    }
   }
+
 }
