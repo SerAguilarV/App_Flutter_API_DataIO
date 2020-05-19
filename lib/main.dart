@@ -1,4 +1,6 @@
-import 'package:api_node/routes/routes.dart';
+import 'package:api_node/pages/NewPass.dart';
+import 'package:api_node/pages/home_page.dart';
+import 'package:api_node/utils/data.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
@@ -10,8 +12,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         title: "Response API-Node.js",
-        initialRoute: "/",
-        routes: getRoutes(),
+        initialRoute: HomePage.id,
+        onGenerateRoute: (settings){
+          if(settings.name == NewPass.id){
+            return MaterialPageRoute(builder: (_) => NewPass(settings.arguments));
+          } else {
+            return MaterialPageRoute(builder: (_) => HomePage());
+          }
+        },
+        // routes: getRoutes(),
       );
   }
 }
