@@ -166,9 +166,9 @@ class _HomePageState extends State<HomePage> {
       if (jsonP["newPass"]){
         print("redirectionando");
         final datos = Data(
-          usuario: jsonP["user"]["username"],
+          usuario: _usuario,
           headers : jsonP["token"],
-          idMongo: jsonP["user"]["id"]
+          idMongo: jsonP["_id"]
         );
         Navigator.pushNamed(context, "/newPass", arguments: datos);
       }
