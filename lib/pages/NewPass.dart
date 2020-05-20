@@ -98,7 +98,7 @@ class _NewPassState extends State<NewPass> {
   }
 
   Future<Null> _responseAPI(BuildContext context) async {
-    final url = "http://192.168.1.104:5000/api/banco/usuarios/${widget.datos.idMongo}";
+    final url = "http://192.168.1.106:5000/api/banco/usuarios/${widget.datos.idMongo}";
     final Map headers = <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
       "Authorization": widget.datos.headers
@@ -110,5 +110,6 @@ class _NewPassState extends State<NewPass> {
     final res = await http.patch(url, headers: headers, body: bodySend);
     final bodys = res.body;
     print(bodys);
+    Navigator.pop(context);
   }
 }
