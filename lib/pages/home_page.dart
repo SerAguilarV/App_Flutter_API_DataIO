@@ -91,6 +91,7 @@ class _HomePageState extends State<HomePage> {
         });
       },
       // keyboardType: TextInputType.number,
+      textCapitalization: TextCapitalization.words,
       decoration: InputDecoration(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
         hintText: "Número de empleado",
@@ -131,8 +132,8 @@ class _HomePageState extends State<HomePage> {
       child: Text("Enviar Usuario"),
         onPressed: (_flag || _flagPass) ? null : (){
           setState(() {
-            _flag = true;
-            _flagText = false;
+            // _flag = true;
+            // _flagText = false;
           });
           print("Enviando Usuario: $_usuario");
           FocusScope.of(context).requestFocus(new FocusNode());
@@ -142,7 +143,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<Null> _responseAPI(BuildContext context) async{
-    final url = "http://192.168.1.104:5000/api/banco/usuarios/signin";
+    final url = "http://192.168.1.106:5000/api/banco/usuarios/signin";
     final headers = <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     };
@@ -155,25 +156,19 @@ class _HomePageState extends State<HomePage> {
     print(res.statusCode);
     final Map jsonP = json.decode(res.body);
     if (jsonP.containsKey("user") ) {
-      setState(() {
-        _idMongo = jsonP["user"]["id"];
-        _idBanco = jsonP["user"]["username"];
-        _showCard = true;
-        _showCardNotFound = false;
-        if (jsonP["user"]["GENERO"] == "M") {
-          _sexPersonURL = NetworkImage("https://f0.pngfuel.com/png/168/827/female-icon-illustration-png-clip-art.png");
-        } else {
-          _sexPersonURL = NetworkImage("https://www.kindpng.com/picc/m/21-211180_transparent-businessman-clipart-png-user-man-icon-png.png");
-        }
-      });
+      final datos = Data(
+          usuario: jsonP["user"]["username"],
+          headers : jsonP["token"],
+          idMongo: jsonP["user"]["id"]
+        );
+        Navigator.pushNamed(context, "/infoUser", arguments: datos);
     } else if(jsonP.containsKey("newPass")){
       if (jsonP["newPass"]){
         print("redirectionando");
         final datos = Data(
-          usuario: _usuario,
-          password: _password,
+          usuario: jsonP["user"]["username"],
           headers : jsonP["token"],
-          idMongo: jsonP["_id"]
+          idMongo: jsonP["user"]["id"]
         );
         Navigator.pushNamed(context, "/newPass", arguments: datos);
       }
