@@ -40,8 +40,8 @@ class _HomePageState extends State<HomePage> {
       body: Container(
         padding: EdgeInsets.symmetric(horizontal: 30),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            SizedBox(height: 80,),
             _getUser(),
             SizedBox(height: 10,),
             _getPass(),
@@ -129,7 +129,11 @@ class _HomePageState extends State<HomePage> {
 
   Widget _botonSendAPI(BuildContext context) {
     return RaisedButton(
-      child: Text("Enviar Usuario"),
+      color: Colors.redAccent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15)
+      ),
+      child: Text("Enviar Usuario", style: TextStyle(color: Colors.white),),
         onPressed: (_flag || _flagPass) ? null : (){
           setState(() {
             // _flag = true;
