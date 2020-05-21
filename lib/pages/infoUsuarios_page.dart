@@ -86,6 +86,7 @@ class _InfoUserPageState extends State<InfoUserPage> {
           width: 350,
           padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -132,7 +133,7 @@ class _InfoUserPageState extends State<InfoUserPage> {
           title: Text("Buscar en la base de empleados", style: TextStyle(color: Colors.white),),
           trailing: Icon(Icons.search, color: Colors.white,),
           onTap: (){
-            // Navigator.pushNamed(context, opt['ruta']);
+            Navigator.pushNamed(context, "/search", arguments: widget.datos);
           },
           ),
     ),)
@@ -144,7 +145,7 @@ class _InfoUserPageState extends State<InfoUserPage> {
           title: Text("Editar informacion", style: TextStyle(color: Colors.white),),
           trailing: Icon(Icons.edit, color: Colors.white,),
           onTap: (){
-            // Navigator.pushNamed(context, opt['ruta']);
+            Navigator.pushNamed(context, "/edit", arguments: widget.datos);
           },
           ),
     ),);
