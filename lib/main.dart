@@ -1,4 +1,6 @@
 import 'package:api_node/pages/NewPass.dart';
+import 'package:api_node/pages/buscar_page.dart';
+import 'package:api_node/pages/editar_page.dart';
 import 'package:api_node/pages/home_page.dart';
 import 'package:api_node/pages/infoUsuarios_page.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +20,10 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(builder: (_) => NewPass(settings.arguments));
           } else if(settings.name == InfoUserPage.id){
             return MaterialPageRoute(builder: (_) => InfoUserPage(settings.arguments));
+          } else if(settings.name == BuscarPage.id){
+            return MaterialPageRoute(builder: (_) => BuscarPage(settings.arguments));
+          } else if(settings.name == EditPage.id){
+            return MaterialPageRoute(builder: (_) => EditPage(settings.arguments));
           } else {
             return MaterialPageRoute(builder: (_) => HomePage());
           }
