@@ -49,6 +49,13 @@ class _InfoUserPageState extends State<InfoUserPage> {
         // 
         // _listaMenu(),
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.redAccent,
+        onPressed: (){
+          _getDatosUsuarios(context);
+        },
+        child: Icon(Icons.update),
+        ),
     );
   }
 
